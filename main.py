@@ -23,7 +23,12 @@ def set_random_position(camera):
         pan_pos = np.random.randint(0, 360)
         tilt_pos = np.random.randint(-20, 90)
         zoom_pos = np.random.randint(1, 2)
-        status = camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        try:
+            status = camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        except:
+            with Plugin() as plugin:
+                plugin.publish('Cannot set camera random position', timestamp=datetime.datetime.now())
+
         time.sleep(1)
 
 
@@ -32,7 +37,11 @@ def grab_image(camera):
     pos_str = str(position[0]) + ',' + str(position[1]) + ',' + str(position[2]) + ' '
     # ct stores current time
     ct = str(datetime.datetime.now())
-    camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
+    try:
+        camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
+    except:
+        with Plugin() as plugin:
+            plugin.publish('Cannot capture image from camera', timestamp=datetime.datetime.now())
 
 
 def tar_images(output_filename, folder_to_archive):
@@ -117,7 +126,12 @@ def main():
         grab_image(camera=Camera1)
 
         for (pan, tilt, zoom) in zip(PAN, TILT, ZOOM):
-            Camera1.relative_control(pan=pan, tilt=tilt, zoom=zoom)
+            try:
+                Camera1.relative_control(pan=pan, tilt=tilt, zoom=zoom)
+            except:
+                with Plugin() as plugin:
+                    plugin.publish('Cannot set camera relative position', timestamp=datetime.datetime.now())
+
             grab_image(camera=Camera1)
 
         publish_images()
