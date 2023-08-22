@@ -19,5 +19,5 @@ inputs:
     type: "string"
   - id: "password"
     type: "string"
-  - id: "camera-ip"
+  - id: "cameraip"
     type: "string"

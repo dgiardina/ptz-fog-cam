@@ -74,7 +74,7 @@ def main():
     parser.add_argument("-pw", "--password",
                         help="The password of the PTZ camera.",
                         type=str, default='')
-    parser.add_argument("-ip", "--camera-ip",
+    parser.add_argument("-ip", "--cameraip",
                         help="The ip of the PTZ camera.",
                         type=str, default='')
     args = parser.parse_args()
@@ -83,7 +83,7 @@ def main():
     iterations = args.iterations
     number_of_commands = args.movements
 
-    Camera1 = sunapi_control.CameraControl(args.camera_ip, args.username, args.password)
+    Camera1 = sunapi_control.CameraControl(args.cameraip, args.username, args.password)
 
     status = 1
     while status != 0:
