@@ -10,3 +10,14 @@ source:
   architectures:
     - "linux/amd64"
     - "linux/arm64"
+inputs:
+  - id: "iterations"
+    type: "int"
+  - id: "movements"
+    type: "int"
+  - id: "username"
+    type: "str"
+  - id: "password"
+    type: "str"
+  - id: "camera-ip"
+    type: "str"
