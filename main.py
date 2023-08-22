@@ -83,7 +83,14 @@ def main():
     iterations = args.iterations
     number_of_commands = args.movements
 
-    Camera1 = sunapi_control.CameraControl(args.cameraip, args.username, args.password)
+    try:
+        Camera1 = sunapi_control.CameraControl(args.cameraip, args.username, args.password)
+    except:
+        with Plugin() as plugin:
+            plugin.publish('Cannot get camera from ip ', args.cameraip, timestamp=datetime.datetime.now())
+            plugin.publish('Cannot get camera from un ', args.username, timestamp=datetime.datetime.now())
+            plugin.publish('Cannot get camera from pw ', args.password, timestamp=datetime.datetime.now())
+            
 
     status = 1
     while status != 0:
