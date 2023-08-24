@@ -27,7 +27,7 @@ def set_random_position(camera):
             status = camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
         except:
             with Plugin() as plugin:
-                plugin.publish('Cannot set camera random position', timestamp=datetime.datetime.now())
+                plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
 
         time.sleep(1)
 
@@ -41,7 +41,7 @@ def grab_image(camera):
         camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
     except:
         with Plugin() as plugin:
-            plugin.publish('Cannot capture image from camera', timestamp=datetime.datetime.now())
+            plugin.publish('cannot.capture.image.from.camera', str(datetime.datetime.now()))
 
 
 def tar_images(output_filename, folder_to_archive):
@@ -96,9 +96,9 @@ def main():
         Camera1 = sunapi_control.CameraControl(args.cameraip, args.username, args.password)
     except:
         with Plugin() as plugin:
-            plugin.publish('Cannot get camera from ip ', args.cameraip, timestamp=datetime.datetime.now())
-            plugin.publish('Cannot get camera from un ', args.username, timestamp=datetime.datetime.now())
-            plugin.publish('Cannot get camera from pw ', args.password, timestamp=datetime.datetime.now())
+            plugin.publish('cannot.get.camera.from.ip', args.cameraip, timestamp=datetime.datetime.now())
+            plugin.publish('cannot.get.camera.from.un', args.username, timestamp=datetime.datetime.now())
+            plugin.publish('cannot.get.camera.from.pw', args.password, timestamp=datetime.datetime.now())
             
 
     status = 1
@@ -117,7 +117,14 @@ def main():
     zoom_values = np.array([-0.2, -0.1, 0, 0.1, 0.2])
     zoom_values = zoom_values * zoom_modulation
 
+    with Plugin() as plugin:
+        plugin.publish('starting.new.image.collection.the.number.of.iterations.is', iterations)
+        plugin.publish('the.number.of.images.recorded.by.iteration.is', number_of_commands)
+
     for iteration in range(iterations):
+        with Plugin() as plugin:
+            plugin.publish('iteration.number', iteration)
+
         os.mkdir('./imgs')
         PAN = np.random.choice(pan_values, number_of_commands)
         TILT = np.random.choice(tilt_values, number_of_commands)
@@ -130,7 +137,7 @@ def main():
                 Camera1.relative_control(pan=pan, tilt=tilt, zoom=zoom)
             except:
                 with Plugin() as plugin:
-                    plugin.publish('Cannot set camera relative position', timestamp=datetime.datetime.now())
+                    plugin.publish('cannot.set.camera.relative.position', str(datetime.datetime.now()))
 
             grab_image(camera=Camera1)
 
@@ -143,6 +150,9 @@ def main():
         time.sleep(1)
 
     print('DONE!')
+
+    with Plugin() as plugin:
+        plugin.publish('finishing.image.collection', str(datetime.datetime.now()))
 
 
 if __name__ == "__main__":
