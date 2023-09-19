@@ -13,23 +13,19 @@ import argparse
 
 import numpy as np
 
-from source import sunapi_control
-
 from waggle.plugin import Plugin
 
 def set_random_position(camera):
-    status = 1
-    while status != 0:
-        pan_pos = np.random.randint(0, 360)
-        tilt_pos = np.random.randint(-20, 90)
-        zoom_pos = np.random.randint(1, 2)
-        try:
-            status = camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
-        except:
-            with Plugin() as plugin:
-                plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
+    pan_pos = np.random.randint(0, 360)
+    tilt_pos = np.random.randint(-20, 90)
+    zoom_pos = np.random.randint(1, 2)
+    try:
+        camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+    except:
+        with Plugin() as plugin:
+            plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
 
-        time.sleep(1)
+    time.sleep(1)
 
 
 def grab_image(camera):
@@ -71,6 +67,9 @@ def publish_images():
 
 def main():
     parser = argparse.ArgumentParser("PTZ sampler")
+    parser.add_argument("-cb", "--camerabrand",
+                        help="An integer for each accepted camera brand (default=0). 0 is Hanwha, 1 is Axis.", type=int,
+                        default=0)
     parser.add_argument("-it", "--iterations",
                         help="An integer with the number of iterations (PTZ rounds) to be run (default=10).", type=int,
                         default=10)
@@ -88,6 +87,17 @@ def main():
                         type=str, default='')
     args = parser.parse_args()
 
+    if args.camerabrand==0:
+        print('Importing Hanwha')
+        from source import sunapi_control
+    elif args.camerabrand==1:
+        print('Importing Axis')
+        from sensecam_control import vapix_control as sunapi_control
+        #from sensecam_control import onvif_control as sunapi_control
+    else:
+        print('Not known camera brand number: ', args.camerabrand)
+
+
 
     iterations = args.iterations
     number_of_commands = args.movements
@@ -101,9 +111,13 @@ def main():
             plugin.publish('cannot.get.camera.from.pw', args.password, timestamp=datetime.datetime.now())
             
 
-    status = 1
-    while status != 0:
-        status = Camera1.absolute_control(1, 1, 1)
+    if args.camerabrand==0:
+        Camera1.absolute_control(1, 1, 1)
+        time.sleep(1)
+    elif args.camerabrand==1:
+        print('moving')
+        Camera1.absolute_move(1, 1, 1)
+        print('moved')
         time.sleep(1)
 
     pan_modulation = 2
@@ -144,10 +158,16 @@ def main():
         publish_images()
         os.rmdir('./imgs')
 
-    status = 1
-    while status != 0:
-        status = Camera1.absolute_control(1, 1, 1)
+
+
+    if args.camerabrand==0:
+        Camera1.absolute_control(1, 1, 1)
         time.sleep(1)
+    elif args.camerabrand==1:
+        Camera1.absolute_move(1, 1, 1)
+        time.sleep(1)
+
+
 
     print('DONE!')
 
