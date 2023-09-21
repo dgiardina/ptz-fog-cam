@@ -15,12 +15,20 @@ import numpy as np
 
 from waggle.plugin import Plugin
 
-def set_random_position(camera):
-    pan_pos = np.random.randint(0, 360)
-    tilt_pos = np.random.randint(-20, 90)
-    zoom_pos = np.random.randint(1, 2)
+def set_random_position(camera, args):
+    if args.camerabrand==0:
+        pan_pos = np.random.randint(0, 360)
+        tilt_pos = np.random.randint(-20, 90)
+        zoom_pos = np.random.randint(1, 2)
+    elif args.camerabrand==1:
+        pan_pos = np.random.randint(-180, 180)
+        tilt_pos = np.random.randint(-180, 180)
+        zoom_pos = np.random.randint(100, 200)
     try:
-        camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        if args.camerabrand==0:
+            camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        elif args.camerabrand==1:
+            camera.absolute_move(float(pan_pos), float(tilt_pos), int(zoom_pos))
     except:
         with Plugin() as plugin:
             plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
@@ -28,13 +36,21 @@ def set_random_position(camera):
     time.sleep(1)
 
 
-def grab_image(camera):
-    position = camera.requesting_cameras_position_information()
+def grab_image(camera, args):
+    if args.camerabrand==0:
+        position = camera.requesting_cameras_position_information()
+    elif args.camerabrand==1:
+        position = camera.get_ptz()
+
     pos_str = str(position[0]) + ',' + str(position[1]) + ',' + str(position[2]) + ' '
     # ct stores current time
     ct = str(datetime.datetime.now())
+
     try:
-        camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
+        if args.camerabrand==0:
+            camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
+        if args.camerabrand==1:
+            camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
     except:
         with Plugin() as plugin:
             plugin.publish('cannot.capture.image.from.camera', str(datetime.datetime.now()))
@@ -89,11 +105,11 @@ def main():
 
     if args.camerabrand==0:
         print('Importing Hanwha')
-        from source import sunapi_control
+        from source import sunapi_control as sunapi_control
     elif args.camerabrand==1:
         print('Importing Axis')
-        from sensecam_control import vapix_control as sunapi_control
-        #from sensecam_control import onvif_control as sunapi_control
+        from source import vapix_control as sunapi_control
+        #from source import onvif_control as sunapi_control
     else:
         print('Not known camera brand number: ', args.camerabrand)
 
@@ -104,6 +120,9 @@ def main():
 
     try:
         Camera1 = sunapi_control.CameraControl(args.cameraip, args.username, args.password)
+
+        if args.camerabrand==1:
+            Camera2 = sunapi_control1.AxisCam(args.cameraip, args.username, args.password)
     except:
         with Plugin() as plugin:
             plugin.publish('cannot.get.camera.from.ip', args.cameraip, timestamp=datetime.datetime.now())
@@ -115,9 +134,7 @@ def main():
         Camera1.absolute_control(1, 1, 1)
         time.sleep(1)
     elif args.camerabrand==1:
-        print('moving')
         Camera1.absolute_move(1, 1, 1)
-        print('moved')
         time.sleep(1)
 
     pan_modulation = 2
@@ -128,7 +145,11 @@ def main():
     pan_values = pan_values * pan_modulation
     tilt_values = np.array([-5, -1, -0.1, 0, 0.1, 1, 5])
     tilt_values = tilt_values * tilt_modulation
-    zoom_values = np.array([-0.2, -0.1, 0, 0.1, 0.2])
+    if args.camerabrand==0:
+        zoom_values = np.array([-0.2, -0.1, 0, 0.1, 0.2])
+    elif args.camerabrand==1:
+        zoom_values = 1000*np.array([-2, -1, 0, 1, 2])
+
     zoom_values = zoom_values * zoom_modulation
 
     with Plugin() as plugin:
@@ -143,17 +164,20 @@ def main():
         PAN = np.random.choice(pan_values, number_of_commands)
         TILT = np.random.choice(tilt_values, number_of_commands)
         ZOOM = np.random.choice(zoom_values, number_of_commands)
-        set_random_position(camera=Camera1)
-        grab_image(camera=Camera1)
+        set_random_position(camera=Camera1, args=args)
+        grab_image(camera=Camera1, args=args)
 
         for (pan, tilt, zoom) in zip(PAN, TILT, ZOOM):
             try:
-                Camera1.relative_control(pan=pan, tilt=tilt, zoom=zoom)
+                if args.camerabrand==0:
+                    Camera1.relative_control(pan=pan, tilt=tilt, zoom=zoom)
+                elif args.camerabrand==1:
+                    Camera1.relative_move(pan=pan, tilt=tilt, zoom=zoom)
             except:
                 with Plugin() as plugin:
                     plugin.publish('cannot.set.camera.relative.position', str(datetime.datetime.now()))
 
-            grab_image(camera=Camera1)
+            grab_image(camera=Camera1, args=args)
 
         publish_images()
         os.rmdir('./imgs')
