@@ -20,10 +20,14 @@ class CameraControl:
     Module for control cameras AXIS using Vapix
     """
 
-    def __init__(self, ip, user, password):
+    def __init__(self, ip, user, password, pan_margin=0.1, tilt_margin=0.1, zoom_margin=1):
         self.__cam_ip = ip
         self.__cam_user = user
         self.__cam_password = password
+
+        self.__pan_margin = pan_margin
+        self.__tilt_margin = tilt_margin
+        self.__zoom_margin = zoom_margin
 
     @staticmethod
     def __merge_dicts(*dict_args) -> dict:
@@ -90,7 +94,24 @@ class CameraControl:
             Returns the response from the device to the command sent.
 
         """
-        return self._camera_command({'pan': pan, 'tilt': tilt, 'zoom': zoom, 'speed': speed})
+        resp = None
+        start_time = time.time()
+
+        current_pan, current_tilt, current_zoom = self.get_ptz()
+        while abs(current_pan - pan) > self.__pan_margin and abs(current_tilt - tilt) > self.__tilt_margin and abs(current_zoom - zoom) > self.__zoom_margin:
+            resp = self._camera_command({'pan': pan, 'tilt': tilt, 'zoom': zoom, 'speed': speed})
+            current_pan, current_tilt, current_zoom = self.get_ptz()
+            time.sleep(1)
+
+        print('Finished')
+
+        end_time = time.time()
+
+        elapsed_time = end_time - start_time
+
+        print("elapsed_time: " + str(elapsed_time))
+
+        return resp
 
     def continuous_move(self, pan: int = None, tilt: int = None, zoom: int = None):
         """
@@ -108,7 +129,7 @@ class CameraControl:
         pan_tilt = str(pan) + "," + str(tilt)
         return self._camera_command({'continuouspantiltmove': pan_tilt, 'continuouszoommove': zoom})
 
-    def relative_move(self, pan: float = None, tilt: float = None, zoom: int = None,
+    def relative_move(self, rpan: float = None, rtilt: float = None, rzoom: int = None,
                       speed: int = None):
         """
         Operation for Relative Pan/Tilt and Zoom Move.
@@ -123,7 +144,29 @@ class CameraControl:
             Returns the response from the device to the command sent.
 
         """
-        return self._camera_command({'rpan': pan, 'rtilt': tilt, 'rzoom': zoom, 'speed': speed})
+        resp = None
+        start_time = time.time()
+
+        current_pan, current_tilt, current_zoom = self.get_ptz()
+        pan = current_pan + rpan
+        tilt = current_tilt + rtilt
+        zoom = current_zoom + rzoom
+        while abs(current_pan - pan) > self.__pan_margin and abs(current_tilt - tilt) > self.__tilt_margin and abs(current_zoom - zoom) > self.__zoom_margin:
+            resp = self._camera_command({'pan': pan, 'tilt': tilt, 'zoom': zoom, 'speed': speed})
+            current_pan, current_tilt, current_zoom = self.get_ptz()
+            time.sleep(1)
+
+        print('Finished')
+
+        end_time = time.time()
+
+        elapsed_time = end_time - start_time
+
+        print("elapsed_time: " + str(elapsed_time))
+
+        return resp
+
+
 
     def stop_move(self):
         """
@@ -330,15 +373,4 @@ class CameraControl:
 
         """
         url = 'http://' + self.__cam_user + ':' + self.__cam_password + '@' + self.__cam_ip + '/jpg/1/image.jpg'
-        os.system("wget " + url + ' -O ' + directory)
-        #filename = wget.download(url, out=directory)
-
-
-
-
-
-        #url = 'http://' + self.__cam_ip + '/axis-cgi/com/ptz.cgi'
-
-        #resp = requests.get(url, auth=HTTPDigestAuth(self.__cam_user, self.__cam_password),
-        #                    params=payload2)
-
+        os.system("wget " + url + ' -O ' + directory.replace(' ', '_'))

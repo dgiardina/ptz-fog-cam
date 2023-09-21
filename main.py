@@ -120,9 +120,6 @@ def main():
 
     try:
         Camera1 = sunapi_control.CameraControl(args.cameraip, args.username, args.password)
-
-        if args.camerabrand==1:
-            Camera2 = sunapi_control1.AxisCam(args.cameraip, args.username, args.password)
     except:
         with Plugin() as plugin:
             plugin.publish('cannot.get.camera.from.ip', args.cameraip, timestamp=datetime.datetime.now())
@@ -148,7 +145,7 @@ def main():
     if args.camerabrand==0:
         zoom_values = np.array([-0.2, -0.1, 0, 0.1, 0.2])
     elif args.camerabrand==1:
-        zoom_values = 1000*np.array([-2, -1, 0, 1, 2])
+        zoom_values = 100*np.array([-2, -1, 0, 1, 2])
 
     zoom_values = zoom_values * zoom_modulation
 
@@ -172,7 +169,7 @@ def main():
                 if args.camerabrand==0:
                     Camera1.relative_control(pan=pan, tilt=tilt, zoom=zoom)
                 elif args.camerabrand==1:
-                    Camera1.relative_move(pan=pan, tilt=tilt, zoom=zoom)
+                    Camera1.relative_move(rpan=pan, rtilt=tilt, rzoom=zoom)
             except:
                 with Plugin() as plugin:
                     plugin.publish('cannot.set.camera.relative.position', str(datetime.datetime.now()))
