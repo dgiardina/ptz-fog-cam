@@ -35,7 +35,6 @@ def set_random_position(camera, args):
 
     time.sleep(1)
 
-
 def grab_image(camera, args):
     if args.camerabrand==0:
         position = camera.requesting_cameras_position_information()
@@ -51,7 +50,6 @@ def grab_image(camera, args):
         with Plugin() as plugin:
             plugin.publish('cannot.capture.image.from.camera', str(datetime.datetime.now()))
 
-
 def tar_images(output_filename, folder_to_archive):
     try:
         cmd = ['tar', 'cvf', output_filename, folder_to_archive]
@@ -59,7 +57,6 @@ def tar_images(output_filename, folder_to_archive):
         print(output)
     except Exception:
         print(f"E: {traceback.format_exc()}")
-
 
 def publish_images():
     # run tar -cvf images.tar ./imgs

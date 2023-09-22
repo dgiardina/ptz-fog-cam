@@ -14,6 +14,8 @@ logging.info('Started')
 
 # pylint: disable=R0904
 
+# timeout (seconds)
+TIME_TOLERANCE = 10
 
 class CameraControl:
     """
@@ -102,6 +104,9 @@ class CameraControl:
         while abs(current_pan - pan) > self.__pan_margin and abs(current_tilt - tilt) > self.__tilt_margin and abs(current_zoom - zoom) > self.__zoom_margin:
             current_pan, current_tilt, current_zoom = self.get_ptz()
             time.sleep(1)
+            if time.time() - start_time > TIME_TOLERANCE:
+                        break
+
 
         print('Finished')
 
@@ -155,6 +160,9 @@ class CameraControl:
         while abs(current_pan - pan) > self.__pan_margin and abs(current_tilt - tilt) > self.__tilt_margin and abs(current_zoom - zoom) > self.__zoom_margin:
             current_pan, current_tilt, current_zoom = self.get_ptz()
             time.sleep(1)
+            if time.time() - start_time > TIME_TOLERANCE:
+                        break
+
 
         print('Finished')
 
