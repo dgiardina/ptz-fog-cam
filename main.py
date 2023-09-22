@@ -45,12 +45,8 @@ def grab_image(camera, args):
     pos_str = str(position[0]) + ',' + str(position[1]) + ',' + str(position[2]) + ' '
     # ct stores current time
     ct = str(datetime.datetime.now())
-
     try:
-        if args.camerabrand==0:
-            camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
-        if args.camerabrand==1:
-            camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
+        camera.snap_shot('./imgs/' + pos_str + ct + '.jpg')
     except:
         with Plugin() as plugin:
             plugin.publish('cannot.capture.image.from.camera', str(datetime.datetime.now()))

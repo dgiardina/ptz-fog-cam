@@ -96,10 +96,10 @@ class CameraControl:
         """
         resp = None
         start_time = time.time()
+        resp = self._camera_command({'pan': pan, 'tilt': tilt, 'zoom': zoom, 'speed': speed})
 
         current_pan, current_tilt, current_zoom = self.get_ptz()
         while abs(current_pan - pan) > self.__pan_margin and abs(current_tilt - tilt) > self.__tilt_margin and abs(current_zoom - zoom) > self.__zoom_margin:
-            resp = self._camera_command({'pan': pan, 'tilt': tilt, 'zoom': zoom, 'speed': speed})
             current_pan, current_tilt, current_zoom = self.get_ptz()
             time.sleep(1)
 
@@ -151,8 +151,8 @@ class CameraControl:
         pan = current_pan + rpan
         tilt = current_tilt + rtilt
         zoom = current_zoom + rzoom
+        resp = self._camera_command({'rpan': rpan, 'rtilt': rtilt, 'rzoom': rzoom, 'speed': speed})
         while abs(current_pan - pan) > self.__pan_margin and abs(current_tilt - tilt) > self.__tilt_margin and abs(current_zoom - zoom) > self.__zoom_margin:
-            resp = self._camera_command({'pan': pan, 'tilt': tilt, 'zoom': zoom, 'speed': speed})
             current_pan, current_tilt, current_zoom = self.get_ptz()
             time.sleep(1)
 
