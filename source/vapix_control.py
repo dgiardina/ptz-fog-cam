@@ -6,6 +6,7 @@ import logging
 import sys
 import os
 import requests
+import cv2
 from requests.auth import HTTPDigestAuth
 from bs4 import BeautifulSoup
 
@@ -16,6 +17,9 @@ logging.info('Started')
 
 # timeout (seconds)
 TIME_TOLERANCE = 10
+
+# focus threshold
+FOCUS_THRESHOLD = 100.0
 
 class CameraControl:
     """
@@ -374,11 +378,25 @@ class CameraControl:
 
     def snap_shot(self, directory: str = None):
         """
-        Returns a description of available PTZ commands. No PTZ control is performed.
+        Captures and image from the PTZ camera.
 
         Returns:
-            Success (OK and system log content text) or Failure (error and description).
+            Success Image is saved in directory.
 
         """
-        url = 'http://' + self.__cam_user + ':' + self.__cam_password + '@' + self.__cam_ip + '/jpg/1/image.jpg'
-        os.system("wget " + url + ' -O ' + directory.replace(' ', '_'))
+        start_time = time.time()
+        lap = 0.0
+        while lap < FOCUS_THRESHOLD:
+            url = 'http://' + self.__cam_user + ':' + self.__cam_password + '@' + self.__cam_ip + '/jpg/1/image.jpg'
+            os.system("wget " + url + ' -O ' + directory.replace(' ', '_'))
+            time.sleep(1)
+
+            # Load the image
+            image = cv2.imread(directory.replace(' ', '_'))
+            # compute the Laplacian of the image and then return the focus
+            # measure, which is simply the variance of the Laplacian
+            lap = cv2.Laplacian(image, cv2.CV_64F).var()
+            if time.time() - start_time > TIME_TOLERANCE:
+                        break
+
+

@@ -2,3 +2,4 @@ numpy
 requests
 bs4
 Pillow
+opencv-python
