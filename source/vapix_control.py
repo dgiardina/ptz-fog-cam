@@ -19,7 +19,7 @@ logging.info('Started')
 TIME_TOLERANCE = 10
 
 # focus threshold
-FOCUS_THRESHOLD = 100.0
+FOCUS_THRESHOLD = 1000.0
 
 class CameraControl:
     """
@@ -396,6 +396,7 @@ class CameraControl:
             # compute the Laplacian of the image and then return the focus
             # measure, which is simply the variance of the Laplacian
             lap = cv2.Laplacian(image, cv2.CV_64F).var()
+            print('lap is ', lap)
             if time.time() - start_time > TIME_TOLERANCE:
                         break
 
