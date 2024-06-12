@@ -15,19 +15,28 @@ import numpy as np
 
 from waggle.plugin import Plugin
 
-def set_random_position(camera, args):
-    if args.camerabrand==0:
+
+def set_random_position(camera, camerabrand: int):
+    """
+    Sets a random position for the camera based on the specified camera brand.
+
+    Args:
+        camera: The camera object used for controlling the camera position.
+        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha).
+
+    """
+    if camerabrand == 0:
         pan_pos = np.random.randint(0, 360)
         tilt_pos = np.random.randint(-20, 90)
         zoom_pos = np.random.randint(1, 2)
-    elif args.camerabrand==1:
+    elif camerabrand == 1:
         pan_pos = np.random.randint(-180, 180)
         tilt_pos = np.random.randint(-180, 180)
         zoom_pos = np.random.randint(100, 200)
     try:
-        if args.camerabrand==0:
+        if camerabrand == 0:
             camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
-        elif args.camerabrand==1:
+        elif camerabrand == 1:
             camera.absolute_move(float(pan_pos), float(tilt_pos), int(zoom_pos))
     except:
         with Plugin() as plugin:
@@ -35,10 +44,23 @@ def set_random_position(camera, args):
 
     time.sleep(1)
 
-def grab_image(camera, args):
-    if args.camerabrand==0:
+def grab_image(camera, camerabrand: int):
+    """
+    Grabs an image from the camera.
+
+    Args:
+        camera: The camera object.
+        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha).
+
+    Raises:
+        ValueError: If the camerabrand is not 0 or 1.
+
+    Returns:
+        None
+    """
+    if camerabrand == 0:
         position = camera.requesting_cameras_position_information()
-    elif args.camerabrand==1:
+    elif camerabrand == 1:
         position = camera.get_ptz()
 
     pos_str = str(position[0]) + ',' + str(position[1]) + ',' + str(position[2]) + ' '
@@ -51,6 +73,19 @@ def grab_image(camera, args):
             plugin.publish('cannot.capture.image.from.camera', str(datetime.datetime.now()))
 
 def tar_images(output_filename, folder_to_archive):
+    """
+    Archives the specified folder into a tar file.
+
+    Args:
+        output_filename (str): The name of the output tar file.
+        folder_to_archive (str): The path to the folder to be archived.
+
+    Raises:
+        Exception: If an error occurs during the archiving process.
+
+    Returns:
+        None
+    """
     try:
         cmd = ['tar', 'cvf', output_filename, folder_to_archive]
         output = subprocess.check_output(cmd).decode("utf-8").strip()
@@ -59,7 +94,10 @@ def tar_images(output_filename, folder_to_archive):
         print(f"E: {traceback.format_exc()}")
 
 def publish_images():
-    # run tar -cvf images.tar ./imgs
+    """
+    Publishes images by creating a tar file, deleting the individual image files, renaming the tar file with a timestamp,
+    and uploading the renamed tar file using a plugin.
+    """
     tar_images('images.tar', './imgs')
     files = glob.glob('./imgs/*.jpg', recursive=True)
     for f in files:
@@ -154,8 +192,8 @@ def main():
         PAN = np.random.choice(pan_values, number_of_commands)
         TILT = np.random.choice(tilt_values, number_of_commands)
         ZOOM = np.random.choice(zoom_values, number_of_commands)
-        set_random_position(camera=Camera1, args=args)
-        grab_image(camera=Camera1, args=args)
+        set_random_position(camera=Camera1, camerabrand=args.camerabrand)
+        grab_image(camera=Camera1, camerabrand=args.camerabrand)
 
         for (pan, tilt, zoom) in zip(PAN, TILT, ZOOM):
             try:
@@ -167,7 +205,7 @@ def main():
                 with Plugin() as plugin:
                     plugin.publish('cannot.set.camera.relative.position', str(datetime.datetime.now()))
 
-            grab_image(camera=Camera1, args=args)
+            grab_image(camera=Camera1, camerabrand=args.camerabrand)
 
         publish_images()
         os.rmdir('./imgs')
