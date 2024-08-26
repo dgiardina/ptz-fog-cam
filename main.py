@@ -43,7 +43,8 @@ def set_random_position(camera, camerabrand: int):
 
     Args:
         camera: The camera object used for controlling the camera position.
-        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha).
+        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha). 
+        Camerabrand is hanwha
 
     Returns:
         None
@@ -67,6 +68,130 @@ def set_random_position(camera, camerabrand: int):
 
     time.sleep(1)
 
+def set_pos_1(camera, camerabrand: int):
+    """
+    Sets a random position for the camera based on the specified camera brand.
+
+    Args:
+        camera: The camera object used for controlling the camera position.
+        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha). 
+        Camerabrand is hanwha
+
+    Returns:
+        None
+    """
+    if camerabrand == 0:
+        pan_pos = -180
+        tilt_pos = 0
+        zoom_pos = 1
+    elif camerabrand == 1:
+        pan_pos = -180
+        tilt_pos = -15
+        zoom_pos = 100
+    try:
+        if camerabrand == 0:
+            camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        elif camerabrand == 1:
+            camera.absolute_move(float(pan_pos), float(tilt_pos), int(zoom_pos))
+    except:
+        with Plugin() as plugin:
+            plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
+
+    time.sleep(1)
+
+def set_pos_2(camera, camerabrand: int):
+    """
+    Sets a random position for the camera based on the specified camera brand.
+
+    Args:
+        camera: The camera object used for controlling the camera position.
+        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha). 
+        Camerabrand is hanwha
+
+    Returns:
+        None
+    """
+    if camerabrand == 0:
+        pan_pos = -180
+        tilt_pos = -90
+        zoom_pos = 1
+    elif camerabrand == 1:
+        pan_pos = -90
+        tilt_pos = -15
+        zoom_pos = 100
+    try:
+        if camerabrand == 0:
+            camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        elif camerabrand == 1:
+            camera.absolute_move(float(pan_pos), float(tilt_pos), int(zoom_pos))
+    except:
+        with Plugin() as plugin:
+            plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
+
+    time.sleep(1)
+
+def set_pos_3(camera, camerabrand: int):
+    """
+    Sets a random position for the camera based on the specified camera brand.
+
+    Args:
+        camera: The camera object used for controlling the camera position.
+        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha). 
+        Camerabrand is hanwha
+
+    Returns:
+        None
+    """
+    if camerabrand == 0:
+        pan_pos = 0
+        tilt_pos = 0
+        zoom_pos = 1
+    elif camerabrand == 1:
+        pan_pos = 0
+        tilt_pos = -15
+        zoom_pos = 100
+    try:
+        if camerabrand == 0:
+            camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        elif camerabrand == 1:
+            camera.absolute_move(float(pan_pos), float(tilt_pos), int(zoom_pos))
+    except:
+        with Plugin() as plugin:
+            plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
+
+    time.sleep(1)
+
+def set_pos_4(camera, camerabrand: int):
+    """
+    Sets a random position for the camera based on the specified camera brand.
+
+    Args:
+        camera: The camera object used for controlling the camera position.
+        camerabrand (int): The brand of the camera (0 for axis, 1 for hanwha). 
+        Camerabrand is hanwha
+
+    Returns:
+        None
+    """
+
+    if camerabrand == 0:
+        pan_pos = 90
+        tilt_pos = 0
+        zoom_pos = 1
+    elif camerabrand == 1:
+        pan_pos = 90
+        tilt_pos = -15
+        zoom_pos = 100
+    try:
+        if camerabrand == 0:
+            camera.absolute_control(float(pan_pos), float(tilt_pos), float(zoom_pos))
+        elif camerabrand == 1:
+            camera.absolute_move(float(pan_pos), float(tilt_pos), int(zoom_pos))
+    except:
+        with Plugin() as plugin:
+            plugin.publish('cannot.set.camera.random.position', str(datetime.datetime.now()))
+
+    time.sleep(1)
 
 def grab_image(camera, camerabrand: int):
     """
@@ -151,10 +276,10 @@ def main():
                         default=0)
     parser.add_argument("-it", "--iterations",
                         help="An integer with the number of iterations (PTZ rounds) to be run (default=10).", type=int,
-                        default=10)
+                        default=1)
     parser.add_argument("-mv", "--movements",
                         help="An integer with the number of movements in each PTZ round to be run (default=10).",
-                        type=int, default=10)
+                        type=int, default=1)
     parser.add_argument("-un", "--username",
                         help="The username of the PTZ camera.",
                         type=str, default='')
@@ -194,50 +319,29 @@ def main():
         Camera1.absolute_move(1, 1, 1)
         time.sleep(1)
 
-    pan_modulation = 2
-    tilt_modulation = 2
-    zoom_modulation = 1
-
-    pan_values = np.array([-5, -1, -0.1, 0, 0.1, 1, 5])
-    pan_values = pan_values * pan_modulation
-    tilt_values = np.array([-5, -1, -0.1, 0, 0.1, 1, 5])
-    tilt_values = tilt_values * tilt_modulation
-    if args.camerabrand==0:
-        zoom_values = np.array([-0.2, -0.1, 0, 0.1, 0.2])
-    elif args.camerabrand==1:
-        zoom_values = 100*np.array([-2, -1, 0, 1, 2])
-
-    zoom_values = zoom_values * zoom_modulation
 
     with Plugin() as plugin:
         plugin.publish('starting.new.image.collection.the.number.of.iterations.is', iterations)
         plugin.publish('the.number.of.images.recorded.by.iteration.is', number_of_commands)
 
-    for iteration in range(iterations):
-        with Plugin() as plugin:
-            plugin.publish('iteration.number', iteration)
 
-        os.mkdir('./imgs')
-        PAN = np.random.choice(pan_values, number_of_commands)
-        TILT = np.random.choice(tilt_values, number_of_commands)
-        ZOOM = np.random.choice(zoom_values, number_of_commands)
-        set_random_position(camera=Camera1, camerabrand=args.camerabrand)
-        grab_image(camera=Camera1, camerabrand=args.camerabrand)
 
-        for (pan, tilt, zoom) in zip(PAN, TILT, ZOOM):
-            try:
-                if args.camerabrand==0:
-                    Camera1.relative_control(pan=pan, tilt=tilt, zoom=zoom)
-                elif args.camerabrand==1:
-                    Camera1.relative_move(rpan=pan, rtilt=tilt, rzoom=zoom)
-            except:
-                with Plugin() as plugin:
-                    plugin.publish('cannot.set.camera.relative.position', str(datetime.datetime.now()))
+    os.mkdir('./imgs')
 
-            grab_image(camera=Camera1, camerabrand=args.camerabrand)
+    set_pos_1(camera=Camera1, camerabrand=args.camerabrand)
+    grab_image(camera=Camera1, camerabrand=args.camerabrand)
 
-        publish_images()
-        os.rmdir('./imgs')
+    set_pos_2(camera=Camera1, camerabrand=args.camerabrand)
+    grab_image(camera=Camera1, camerabrand=args.camerabrand)
+    
+    set_pos_3(camera=Camera1, camerabrand=args.camerabrand)
+    grab_image(camera=Camera1, camerabrand=args.camerabrand)
+
+    set_pos_4(camera=Camera1, camerabrand=args.camerabrand)
+    grab_image(camera=Camera1, camerabrand=args.camerabrand)
+
+    publish_images()
+    os.rmdir('./imgs')
 
     if args.camerabrand==0:
         Camera1.absolute_control(1, 1, 1)
@@ -249,7 +353,6 @@ def main():
 
     with Plugin() as plugin:
         plugin.publish('finishing.image.collection', str(datetime.datetime.now()))
-
 
 if __name__ == "__main__":
     main()
